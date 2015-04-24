@@ -1,0 +1,8 @@
+{
+  "name": "Codenubs",
+  "version": "0.0.1",
+  "dependencies": {
+    "bootstrap": "~3.3.4",
+    "react": "~0.13.2"
+  }
+}
