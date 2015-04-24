@@ -7,6 +7,7 @@ var gulp = require('gulp'),
     watch = require('gulp-watch'),
     concat = require('gulp-concat'),
     runSquence = require('run-sequence'),
+    minifyHtml = require('gulp-minify-html'),
     wiredep = require('wiredep').stream;
 
 var SRC = 'src/';
@@ -22,7 +23,13 @@ gulp.task('bower', function () {
 });
 
 gulp.task('html', function () {
+  var minifyOpt = {
+    conditionals: true,
+    empty: true
+  }
+
   gulp.src(SRC + '*.html')
+      .pipe(minifyHtml(minifyOpt))
       .pipe(gulp.dest(APP));
 });
 
