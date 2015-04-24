@@ -37,8 +37,8 @@ gulp.task('style', function () {
 });
 
 gulp.task('watch', function () {
-  gulp.watch(SRC_STYLE + '*.scss', ['style']);
   gulp.watch(SRC + '*.html', ['html']);
+  gulp.watch(SRC_STYLE + '*.scss', ['style']);
 
   console.log('Watching!...');
 });
