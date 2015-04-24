@@ -1,3 +1,19 @@
-body {
-    background: grey;
+@import "tweak/variables";
+
+@import "../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+
+@import "../../bower_components/fontawesome/scss/font-awesome.scss";
+
+@import "tweak/buttons";
+
+#header {
+    border-bottom: 1px solid #e5e5e5;
+    position: fixed;
+    width: 100%;
+
+    ul {
+        li {
+            list-style: none;
+        }
+    }
 }
