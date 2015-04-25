@@ -2,6 +2,5 @@
   "name": "Codenubs",
   "version": "0.0.1",
   "dependencies": {
-    "react": "~0.13.2"
   }
 }
