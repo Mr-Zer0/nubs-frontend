@@ -1,72 +1,102 @@
 'use strict';
 
-var gulp = require('gulp'),
-    sass = require('gulp-sass'),
-    minifyCss = require('gulp-minify-css'),
-    minifyJs = require('gulp-uglify'),
-    minifyHtml = require('gulp-minify-html'),
-    react = require('gulp-react'),
-    autoprefixer = require('gulp-autoprefixer'),
-    concat = require('gulp-concat'),
-    runSquence = require('run-sequence'),
-    sourcemap = require('gulp-sourcemaps'),
-    watch = require('gulp-watch'),
-    wiredep = require('wiredep').stream;
+// Using gulp packages
+var gulp      = require('gulp'),
+  sass        = require('gulp-sass'),
+  minifyCss   = require('gulp-minify-css'),
+  minifyJs    = require('gulp-uglify'),
+  minifyHtml  = require('gulp-minify-html'),
+  autoprefixer = require('gulp-autoprefixer'),
+  concat      = require('gulp-concat'),
+  runSquence  = require('run-sequence'),
+  source      = require('vinyl-source-stream'),
+  watchify    = require('watchify'),
+  browserify  = require('browserify'),
+  reactify    = require('reactify'),
+  clean       = require('gulp-clean'),
+  wiredep     = require('wiredep').stream;
 
-var SRC = 'src/';
-var SRC_STYLE = SRC + 'style/';
-var SRC_SCRIPT = SRC + 'script/';
+// Paths for src directory
+var src = {
+  ROOT    : 'src/',
+  STYLE   : 'src/style/',
+  SCRIPT  : 'src/script/',
+  REACT   : 'src/script/app/'
+};
 
-var APP = 'app/';
-var APP_STYLE = APP + 'style/';
-var APP_SCRIPT = APP + 'script/';
+// Paths for dest directory
+var dest = {
+  ROOT    : 'app/',
+  STYLE   : 'app/style/',
+  SCRIPT  : 'app/script',
+  REACT   : 'app/script/app/'
+};
 
+// Styles and script are automatic link in html
 gulp.task('bower', function () {
-  gulp.src(SRC + 'index.html')
+  gulp.src(src.ROOT + 'index.html')
       .pipe(wiredep())
-      .pipe(gulp.dest(APP));
+      .pipe(gulp.dest(dest.ROOT));
 });
 
+gulp.task('wash', function () {
+    gulp.src(dest.SCRIPT)
+        .pipe(clean());
+});
+
+// Minify html files
 gulp.task('html', function () {
   var minifyOpt = {
     conditionals: true,
     empty: true,
     comments: true
-  }
-
-  gulp.src(SRC + '*.html')
+  };
+  
+  gulp.src(src.ROOT + '*.html')
       .pipe(minifyHtml(minifyOpt))
-      .pipe(gulp.dest(APP));
+      .pipe(gulp.dest(dest.ROOT));
 });
 
-gulp.task('react', function () {
-  gulp.src(APP_SCRIPT + 'app/**/*.js')
-      .pipe(sourcemap.init())
-      .pipe(react())
-      .pipe(sourcemap.write('.'))
-      .pipe(gulp.dest(APP_SCRIPT + 'app/'));
+// Transforming reactjs
+gulp.task('watch', function () {
+  gulp.watch(src.SCRIPT + 'Nubs.js', ['wash']);
+  gulp.watch(src.ROOT + '*.html', ['html']);
+  gulp.watch(src.STYLE + '*.scss', ['style']);
+
+  var watcher = watchify(browserify({
+    entries   : ['./src/script/Nubs.js'],
+    transform : [reactify],
+    debug     : true,
+    fullPaths : true,
+    cache     : {},
+    packageCache : {}
+  }));
+
+  return watcher.on('update', function () {
+    watcher.bundle()
+          .pipe(source('nubs.js'))
+          .pipe(gulp.dest(dest.REACT));
+  
+    console.log('Updated!');
+  })
+    .bundle()
+    .pipe(source('nubs.js'))
+    .pipe(gulp.dest(dest.REACT));
+  
 });
 
 // Compile scss, concatenate styles and make style for last 2 verson of browser
 gulp.task('style', function () {
-  gulp.src(SRC_STYLE + '*.scss')
+  gulp.src(src.STYLE + '*.scss')
       .pipe(sass())
       .pipe(autoprefixer('last 2 version'))
       .pipe(concat('style.min.css'))
       .pipe(minifyCss())
-      .pipe(gulp.dest(APP_STYLE));
-});
-
-gulp.task('watch', function () {
-  gulp.watch(SRC + '*.html', ['html']);
-  gulp.watch(SRC_STYLE + '*.scss', ['style']);
-  gulp.watch(SRC_SCRIPT + 'app/**/*.js', ['react']);
-
-  console.log('Watching!...');
+      .pipe(gulp.dest(dest.STYLE));
 });
 
 gulp.task('build', function () {
-  runSquence('html', 'bower', 'react', 'style');
+  runSquence('wash', 'html', 'bower', 'watch', 'style');
 });
 
-gulp.task('default', ['build']);
+gulp.task('default', ['watch']);
