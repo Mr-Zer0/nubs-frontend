@@ -1,102 +1,73 @@
-'use strict';
+var gulp = require('gulp'),
+    prefixer = require('gulp-autoprefixer'),
+    clean = require('gulp-clean'),
+    compass = require('gulp-compass'),
+    copy = require('gulp-copy')
+    watch = require('gulp-watch')
+    gutil = require('gulp-util')
+    inject = require('gulp-inject');
 
-// Using gulp packages
-var gulp      = require('gulp'),
-  sass        = require('gulp-sass'),
-  minifyCss   = require('gulp-minify-css'),
-  minifyJs    = require('gulp-uglify'),
-  minifyHtml  = require('gulp-minify-html'),
-  autoprefixer = require('gulp-autoprefixer'),
-  concat      = require('gulp-concat'),
-  runSquence  = require('run-sequence'),
-  source      = require('vinyl-source-stream'),
-  watchify    = require('watchify'),
-  browserify  = require('browserify'),
-  reactify    = require('reactify'),
-  clean       = require('gulp-clean'),
-  wiredep     = require('wiredep').stream;
-
-// Paths for src directory
 var src = {
-  ROOT    : 'src/',
-  STYLE   : 'src/style/',
-  SCRIPT  : 'src/script/',
-  REACT   : 'src/script/app/'
+  root: "src/",
+  image: "src/image/",
+  script: "src/script/",
+  style: "src/style/"
 };
 
-// Paths for dest directory
-var dest = {
-  ROOT    : 'app/',
-  STYLE   : 'app/style/',
-  SCRIPT  : 'app/script',
-  REACT   : 'app/script/app/'
+var dev = {
+  root: "dest.dev/",
+  image: "dest.dev/assets/img/",
+  script: "dest.dev/assets/js/",
+  style: "dest.dev/asset/css/"
 };
 
-// Styles and script are automatic link in html
-gulp.task('bower', function () {
-  gulp.src(src.ROOT + 'index.html')
-      .pipe(wiredep())
-      .pipe(gulp.dest(dest.ROOT));
+var prod = {
+
+};
+
+gulp.task('cleaner', function () {
+  gulp.src([dev.style + '*.css', dev.root + '*.html'])
+      .pipe(clean());
 });
 
-gulp.task('wash', function () {
-    gulp.src(dest.SCRIPT)
-        .pipe(clean());
+gulp.task('compasser', function () {
+  gulp.src([src.style + '*.scss', src.style + '**/*.scss'])
+      .pipe(compass({
+        style: "expanded",
+        css: dev.style,
+        sass: src.style
+      }))
+      .pipe(prefixer({
+        browsers: [
+          '> 1%',
+          'last 2 versions',
+          'firefox >= 4',
+          'safari 7',
+          'safari 8',
+          'IE 8',
+          'IE 9',
+          'IE 10'
+        ],
+        cascade: true
+      }))
+      .pipe(gulp.dest(dev.style))
+      .on('error', gutil.log);
 });
 
-// Minify html files
-gulp.task('html', function () {
-  var minifyOpt = {
-    conditionals: true,
-    empty: true,
-    comments: true
-  };
-  
-  gulp.src(src.ROOT + '*.html')
-      .pipe(minifyHtml(minifyOpt))
-      .pipe(gulp.dest(dest.ROOT));
+gulp.task('copier', function () {
+  gulp.src(src.root + '*.html')
+      .pipe(copy(dev.root, {prefix: 1}));
 });
 
-// Transforming reactjs
+/* ===== Run ===== */
+gulp.task('dev', ['cleaner', 'copier', 'compasser']);
+
 gulp.task('watch', function () {
-  gulp.watch(src.SCRIPT + 'Nubs.js', ['wash']);
-  gulp.watch(src.ROOT + '*.html', ['html']);
-  gulp.watch(src.STYLE + '*.scss', ['style']);
+  gutil.log('Start watching ...');
 
-  var watcher = watchify(browserify({
-    entries   : ['./src/script/Nubs.js'],
-    transform : [reactify],
-    debug     : true,
-    fullPaths : true,
-    cache     : {},
-    packageCache : {}
-  }));
-
-  return watcher.on('update', function () {
-    watcher.bundle()
-          .pipe(source('nubs.js'))
-          .pipe(gulp.dest(dest.REACT));
-  
-    console.log('Updated!');
-  })
-    .bundle()
-    .pipe(source('nubs.js'))
-    .pipe(gulp.dest(dest.REACT));
-  
+  gulp.watch([src.style + '*.scss', src.style + '**/*.scss'], ['cleaner', 'compasser']);
 });
 
-// Compile scss, concatenate styles and make style for last 2 verson of browser
-gulp.task('style', function () {
-  gulp.src(src.STYLE + '*.scss')
-      .pipe(sass())
-      .pipe(autoprefixer('last 2 version'))
-      .pipe(concat('style.min.css'))
-      .pipe(minifyCss())
-      .pipe(gulp.dest(dest.STYLE));
-});
+gulp.task('prod', function () {
 
-gulp.task('build', function () {
-  runSquence('wash', 'html', 'bower', 'watch', 'style');
 });
-
-gulp.task('default', ['watch']);
