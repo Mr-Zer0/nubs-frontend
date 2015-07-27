@@ -1,9 +1,0 @@
-.btn-night {
-    @include button-variant($btn-night-color, $btn-night-bg, $btn-night-border);
-}
-
-.icon-btn {
-    border: 1px solid $icon-btn-border;
-    color: $icon-btn-color;
-    background: none;
-}
