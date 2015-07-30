@@ -2,23 +2,26 @@ var gulp = require('gulp'),
     prefixer = require('gulp-autoprefixer'),
     clean = require('gulp-clean'),
     compass = require('gulp-compass'),
-    copy = require('gulp-copy')
-    watch = require('gulp-watch')
-    gutil = require('gulp-util')
-    inject = require('gulp-inject');
+    copy = require('gulp-copy'),
+    watch = require('gulp-watch'),
+    gutil = require('gulp-util'),
+    inject = require('gulp-inject'),
+    sequent = require('run-sequence');
 
 var src = {
   root: "src/",
   image: "src/image/",
   script: "src/script/",
-  style: "src/style/"
+  style: "src/style/",
+  font: 'src/font/'
 };
 
 var dev = {
   root: "dest.dev/",
   image: "dest.dev/assets/img/",
   script: "dest.dev/assets/js/",
-  style: "dest.dev/asset/css/"
+  style: "dest.dev/asset/css/",
+  font: 'dest.dev/asset/font/'
 };
 
 var prod = {
@@ -26,8 +29,8 @@ var prod = {
 };
 
 gulp.task('cleaner', function () {
-  gulp.src([dev.style + '*.css', dev.root + '*.html'])
-      .pipe(clean());
+  gulp.src([dev.style + '*.css', dev.root + '*.html'], {read: false})
+      .pipe(clean({force: true}));
 });
 
 gulp.task('compasser', function () {
@@ -54,18 +57,27 @@ gulp.task('compasser', function () {
       .on('error', gutil.log);
 });
 
-gulp.task('copier', function () {
-  gulp.src(src.root + '*.html')
+gulp.task('copy-html', function ()
+{
+   gulp.src(src.root + '*.html')
       .pipe(copy(dev.root, {prefix: 1}));
 });
 
+gulp.task('copy-font', function ()
+{
+  gulp.src(src.font + '*')
+      .pipe(copy(dev.font, {prefix: 1}));
+});
+
 /* ===== Run ===== */
-gulp.task('dev', ['cleaner', 'copier', 'compasser']);
+gulp.task('dev', function (callback) {
+  sequent('cleaner', 'compasser', 'copy-html', 'copy-font', callback);
+});
 
 gulp.task('watch', function () {
   gutil.log('Start watching ...');
 
-  gulp.watch([src.style + '*.scss', src.style + '**/*.scss'], ['cleaner', 'compasser']);
+  gulp.watch([src.style + '*.scss', src.style + '**/*.scss', src.root + '*.html'], ['dev']);
 });
 
 gulp.task('prod', function () {
