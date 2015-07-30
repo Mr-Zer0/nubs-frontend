@@ -1,4 +1,76 @@
-body {
-    color: skyblue;
-    background: blue;
+@import 'partials/base';
+
+/* === Navigation === */
+
+#nav-bar {
+    height: $global-nav-bar-height;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e5e5;
+
+    .codenubs-logo {
+        left: 50%;
+        margin-left: -27px;
+        top: 50%;
+        margin-top: -21px;
+
+        a {
+            @extend %display-block;
+            width: 54px;
+            height: 42px;
+            background-image: url('../img/logo.png');
+        }
+    }
+
+    .navigation {
+        li {
+            list-style: none;
+            height: $global-nav-bar-height;
+            margin-right: 40px;
+
+            a {
+                @extend %display-block;
+                height: $global-nav-bar-height;
+                font-family: 'Lato', sans-serif;
+                font-size: 14px;
+                color: $nubs-font-color;
+
+                &:hover {
+                    color: #000000;
+                    text-decoration: none;
+                }
+
+                span {
+                    @extend %display-block;
+                    padding-top: 37px;
+                }
+            }
+        }
+    }
+
+    .actions {
+        margin-right: 50px;
+
+        li {
+            list-style: none;
+            margin-left: 30px;
+            height: $global-nav-bar-height;
+
+            a {
+                display: block;
+                margin-top: 26px;
+
+                .profile-wrapper {
+                    @include fixed-image(42px, 42px);
+                }
+            }
+        }
+    }
+}
+
+/* === Posts List === */
+.nubs-posts {
+    .author-wrapper {
+        margin-right: 10px;
+        @include fixed-image(42px, 42px);
+    }
 }
