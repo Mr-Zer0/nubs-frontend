@@ -1,0 +1,17 @@
+%display-block {
+    display: block;
+}
+
+%post-title {
+    
+}
+
+@mixin fixed-image($width, $height) {
+    width: $width;
+    height: $height;
+    overflow: hidden;
+
+    & img {
+        width: inherit;
+    }
+}
